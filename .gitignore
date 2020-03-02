@@ -1,3 +1,4 @@
 .ipynb_checkpoints
 landsat
 *.nc
+usgs_shapefiles
