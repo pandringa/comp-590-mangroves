@@ -32,3 +32,6 @@ Jupyter notebooks were run in [Google Colab](https://colab.research.google.com),
 ### Using models for prediction
 * Runs small-scale predictions from a saved TensorFlow model, to quickly test results and iterate
 * Converts a Google AI Platform model into a format usable by EarthEngine, and runs a larger prediction on that model to create regional maps
+
+### Other assorted scripts
+* `[LandsatTest.py](https://github.com/pandringa/comp-590-mangroves/master/blob/notebooks/LandsatTest.py)` Experiments with loading Landsat data into xarray, before we switched to EarthEngine.
