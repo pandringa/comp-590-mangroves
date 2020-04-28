@@ -33,7 +33,7 @@ See the "assorted notebooks" section for some attempts at uploading OCO2 data in
 
 ### Preparing model datasets
 * [`BuildSampleRegions.js`](https://github.com/pandringa/comp-590-mangroves/master/blob/earthengine_js/BuildSampleRegions.js) Builds list of testing and training regions based on the Global Mangrove Watch maps, adding a 1km buffer then randomly choosing 70% of polygons for training and 30% for evaluation.
-* [`TakeSamples.ipynb`] A version of an [EarthEngine tutorial notebook](https://github.com/google/earthengine-api/blob/master/python/examples/ipynb/UNET_regression_demo.ipynb) which downloads Landsat 7 imagery, creates cloud-free composites, then picks samples of the composite from the pre-defined mangrove regions, uploading them to [Google Cloud Storage](https://cloud.google.com/storage) as `.tfrecord` files.
+* [`TakeSamples.ipynb`](https://github.com/pandringa/comp-590-mangroves/master/blob/notebooks/TakeSamples.ipynb) A version of an [EarthEngine tutorial notebook](https://github.com/google/earthengine-api/blob/master/python/examples/ipynb/UNET_regression_demo.ipynb) which downloads Landsat 7 imagery, creates cloud-free composites, then picks samples of the composite from the pre-defined mangrove regions, uploading them to [Google Cloud Storage](https://cloud.google.com/storage) as `.tfrecord` files.
 
 ### Training models
 * Builds a micro UNET model capable of being run inside Google Colab, for crude hyperparemeter tuning and faster iteration
