@@ -17,12 +17,22 @@ Additionally, some of the constants were tweaked for multiple runs, e.g. to test
 Jupyter notebooks were run in [Google Colab](https://colab.research.google.com), while Javascript files were run in the [Earth Engine Console](code.earthengine.google.com).
 
 ### Uploading Assets to Earth Engine
-* Uploads shapefile maps from the Global Mangrove Watch to Earth Engine assets
-* Converts OCO2 satellite data from NetCDF files into CSV, and uploads them to EarthEngine as point shapes
-* Rasterizes OCO2 data into EarthEngine raster files. (Operations timed out — only works on smaller regions.)
+This initial step was mostly done from the command line, using shapefile maps of mangroves from the [Global Mangrove Watch](https://data.unep-wcmc.org/datasets/45).
+
+```bash
+## Move downloaded files into Google Cloud Storage
+gsutil mv ~/Downloads/gmw_*_v2.shp gs://mangrove-models/
+
+## Import Google Cloud Storage assets into EarthEngine
+earthengine upload table --asset_id=users/pandringa/gmw_2007 gs://mangrove-models/gmw_2009/GMW_2007_v2.shp
+earthengine upload table --asset_id=users/pandringa/gmw_2008 gs://mangrove-models/gmw_2009/GMW_2008_v2.shp
+...
+```
+
+See the "assorted notebooks" section for some attempts at uploading OCO2 data into EarthEngine, which we ended up aborting when rasterization didn't work.
 
 ### Preparing model datasets
-* Builds lists of testing and training geographies, adding a 1km buffer to each one
+* [`BuildSampleRegions.js`](https://github.com/pandringa/comp-590-mangroves/master/blob/earthengine_js/BuildSampleRegions.js) Builds list of testing and training regions based on the Global Mangrove Watch maps, adding a 1km buffer then randomly choosing 70% of polygons for training and 30% for evaluation.
 * Downloads Landsat 7 imagery, creates cloud-free composites, then picks samples from each composite, uploading them to [Google Cloud Storage](https://cloud.google.com/storage) as `.tfrecord` files.
 
 ### Training models
