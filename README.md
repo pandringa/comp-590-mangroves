@@ -44,4 +44,8 @@ See the "assorted notebooks" section for some attempts at uploading OCO2 data in
 * Converts a Google AI Platform model into a format usable by EarthEngine, and runs a larger prediction on that model to create regional maps
 
 ### Other assorted scripts
-* [`LandsatTest.py`](https://github.com/pandringa/comp-590-mangroves/master/blob/notebooks/LandsatTest.py) Experiments with loading Landsat data into xarray, before we switched to EarthEngine.
+* [`LandsatTest.ipynb`](https://github.com/pandringa/comp-590-mangroves/master/blob/notebooks/LandsatTest.ipynb) Experiments with loading Landsat data into xarray, before we switched to EarthEngine.
+* [`EarthEngineTest.ipynb`](https://github.com/pandringa/comp-590-mangroves/master/blob/notebooks/EarthEngineTest.ipynb) Experiments with rendering EarthEngine maps in Python notebooks, using a different mangrove dataset we eventually abandoned.
+* [`NC4_CSV.ipynb`](https://github.com/pandringa/comp-590-mangroves/master/blob/notebooks/NC4_CSV.ipynb) A notebook for converting NetCDF files into CSV, for uploading into EarthEngine tables.
+* [`OCO2.ipynb`](https://github.com/pandringa/comp-590-mangroves/master/blob/notebooks/OCO2.ipynb) A notebook that attempted to convert the OCO2 files from NetCDF into Shapefiles, which was abandoned when CSV exports turned out to be faster and smaller.
+* [`NDVI_Model.ipynb`]((https://github.com/pandringa/comp-590-mangroves/master/blob/notebooks/NDVI_Model.ipynb) An earlier attempt to start a model based on the NDVI, which was aborted in favor of the UNET self-learning model.
