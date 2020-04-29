@@ -36,11 +36,10 @@ See the "assorted notebooks" section for some attempts at uploading OCO2 data in
 * [`TakeSamples.ipynb`](https://github.com/pandringa/comp-590-mangroves/master/blob/notebooks/TakeSamples.ipynb) A version of an [EarthEngine tutorial notebook](https://github.com/google/earthengine-api/blob/master/python/examples/ipynb/UNET_regression_demo.ipynb) which downloads Landsat 7 imagery, creates cloud-free composites, then picks samples of the composite from the pre-defined mangrove regions, uploading them to [Google Cloud Storage](https://cloud.google.com/storage) as `.tfrecord` files.
 
 ### Training models
-* Builds a micro UNET model capable of being run inside Google Colab, for crude hyperparemeter tuning and faster iteration
-* Builds a full-scale UNET model as a python package and uploads it to [Google AI Platform](https://cloud.google.com/ai-platform) for training.
+* [`ColabModel.ipynb`](https://github.com/pandringa/comp-590-mangroves/blob/master/notebooks/ColabModel.ipynb) Builds a smaller, 10-epoch UNET model which can be trained in Google Colab, for crude hyperparemeter tuning and faster iterations. Then, it uses this model (or an alternate, pre-trained model stored in Google Cloud) to make predictions over a sample region.
+* [`AIPlatformModel.ipynb`](https://github.com/pandringa/comp-590-mangroves/blob/master/notebooks/AIPlatformModel.ipynb) Builds a full-scale UNET model as a python package and uploads it to [Google AI Platform](https://cloud.google.com/ai-platform) for training. It also includes a section at the bottom about using the trained model in EarthEngine, although we did that using an EarthEngine JS script. (See below.)
 
 ### Using models for prediction
-* Runs small-scale predictions from a saved TensorFlow model, to quickly test results and iterate
 * Converts a Google AI Platform model into a format usable by EarthEngine, and runs a larger prediction on that model to create regional maps
 
 ### Other assorted scripts
