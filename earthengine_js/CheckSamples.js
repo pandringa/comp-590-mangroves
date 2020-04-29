@@ -1,4 +1,12 @@
+function countHits(img, band, fc){
+  return img.select(band)
+    .reduceRegions(fc, ee.Reducer.count(), 30)
+    .filter(ee.Filter.neq("count", 0))
+    .size()
+}
+
 var mangroves = ee.FeatureCollection("users/pandringa/gmw_2007");
+var mangrove_img = new ee.Image(0).byte().paint(mangroves, 1);
 Map.addLayer(mangroves, {color: '000000'}, "mangroves");
 
 var TOTAL_SIZE = 14000;
@@ -25,9 +33,11 @@ print("Testing points over 3x size:", training_area.filter(ee.Filter.gt("AREA", 
 
 var train_points = ee.FeatureCollection("users/pandringa/test_train_area_sample");
 print("Train samples", train_points.size());
+print("Train sample trues", countHits(mangrove_img, 'constant', train_points))
 
 var test_points = ee.FeatureCollection("users/pandringa/test_eval_area_sample");
 print("Eval samples", test_points.size());
+print("Eval sample trues", countHits(mangrove_img, 'constant', test_points))
 
 Map.addLayer(training_area, {color: 'FF5555'}, "training area");
 Map.addLayer(train_points, {color: 'FF0000'}, "training samples");
