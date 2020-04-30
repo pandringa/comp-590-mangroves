@@ -4,7 +4,7 @@ This repo contains all the various Jupyter notebooks and Google EarthEngine scri
 
 Initially, our plan was to create a worldwide model and create full-earth maps — but processing-power and time/money constraints forced us to only focus on one region, the Caribbean.
 
-Even so, the algoritms (and models) in this repo _should_ be generalizable, if you wanted to map mangroves in another region instead of the Caribbean.
+Even so, the algorithms (and models) in this repo _should_ be generalizable, if you wanted to map mangroves in another region instead of the Caribbean.
 
 For more background on this project and a throrough discussion of our results, take a look at [the paper](#) (link TK).
 
