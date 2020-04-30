@@ -1,6 +1,5 @@
+var opticalBands = ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7'];
 function maskClouds(image){
-  var opticalBands = ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7'];
-  
   var cloudShadowBitMask = ee.Number(2).pow(3).int();
   var cloudsBitMask = ee.Number(2).pow(5).int();
   var qa = image.select('pixel_qa');
@@ -13,13 +12,17 @@ function maskClouds(image){
   return image.select(opticalBands).divide(10000).updateMask(mask);
 }
 
-var YEAR = 2016
-var landsat = ee.ImageCollection('LANDSAT/LE07/C01/T1_SR');
-var image = landsat.filterDate(YEAR+'-01-01', YEAR+'-12-31').map(maskClouds).median()
+var YEAR = 2019
+var image = ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')
+  .filterDate(YEAR+'-01-01', YEAR+'-12-31')
+  .map(maskClouds)
+  .median()
+  .select(opticalBands)
+  .float();
 
 var shape = ee.FeatureCollection('users/pandringa/caribbean_mangroves_union_2016');
 var mangroveMask = new ee.Image(0).byte().paint(shape, 1);
-Map.addLayer(mangroveMask.updateMask(mangroveMask), {}, "mangroves");
+// Map.addLayer(mangroveMask.updateMask(mangroveMask), {palette: ['99FF99', '22FF22'], min: 0, max: 1}, "mangroves");
 
 var predictor = ee.Model.fromAiPlatformPredictor({
     projectName: 'mangrove-ml',
@@ -30,20 +33,21 @@ var predictor = ee.Model.fromAiPlatformPredictor({
     proj: ee.Projection('EPSG:4326').atScale(30),
     fixInputProj: true,
     inputShapes: {
-      'array': [144, 144]
+      'array': [144, 144, opticalBands.length]
     },
     outputBands: {'impervious': {
         'type': ee.PixelType.float()
       }
     }
 })
-var predictions = predictor.predictImage(image.toFloat().toArray()).updateMask(mangroveMask)
+var predictions = predictor.predictImage(image.toArray()).updateMask(mangroveMask)
 
+// Map.addLayer(predictions.updateMask(predictions), {min: 0, max: 1}, "predictions")
 Export.image.toAsset({
   image: predictions,
-  assetId: "users/pandringa/final_model_predictions",
-  description: "model_caribbean_predictions",
-  region: shape.first().geometry().bounds(),
+  assetId: "users/pandringa/final_model_predictions_costa_rica_2019",
+  description: "model_caribbean_predictions_cr19",
+  region: costa_rica,
   scale: 30,
   maxPixels: 1e13
 });
