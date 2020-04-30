@@ -38,14 +38,22 @@ var panama_city =
           [-84.68216917561263, 11.085406634790713],
           [-84.91837523030013, 10.945215741587166],
           [-85.60502073811263, 11.222836305098825],
-          [-86.03781948005137, 10.877434114738056]]]);
+          [-86.03781948005137, 10.877434114738056]]]),
+    puerto_jiminez = 
+    /* color: #98ff00 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-83.86332831505052, 9.267295185967846],
+          [-83.86332831505052, 8.03455825553625],
+          [-82.17692694786302, 8.03455825553625],
+          [-82.17692694786302, 9.267295185967846]]]);
 
 // CUSTOMIZABLE VARIABLES:
 var region = costa_rica;
-var PREDICTION_ASSET = 'users/pandringa/costa_rica_2019';
-var TRUTH_SHAPEFILE = false//'users/pandringa/gmw_2016'; // Set to false if no truth to compare against
-var DEFAULT_SPLIT = 0.55; // set to a number like 0.5 if TRUTH_SHAPEFILE is false
-
+var YEAR = 2016;
+var PREDICTION_ASSET = 'users/pandringa/costa_rica_'+YEAR;
+var TRUTH_SHAPEFILE = 'users/pandringa/gmw_'+YEAR; // Set to false if no truth to compare against
+var DEFAULT_SPLIT = false; // set to a number like 0.5 if TRUTH_SHAPEFILE is false
 
 var reducerOpts = {
   reducer: ee.Reducer.count(),
@@ -54,28 +62,56 @@ var reducerOpts = {
   maxPixels: 1e13
 };
 
+var opticalBands = ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7'];
+function maskClouds(image){
+  var cloudShadowBitMask = ee.Number(2).pow(3).int();
+  var cloudsBitMask = ee.Number(2).pow(5).int();
+  var qa = image.select('pixel_qa');
+  var mask1 = qa.bitwiseAnd(cloudShadowBitMask).eq(0).and(
+    qa.bitwiseAnd(cloudsBitMask).eq(0));
+  var mask2 = image.mask().reduce('min');
+  var mask3 = image.select(opticalBands).gt(0).and(
+          image.select(opticalBands).lt(10000)).reduce('min');
+  var mask = mask1.and(mask2).and(mask3);
+  return image.select(opticalBands).divide(10000).updateMask(mask);
+}
+
+var landsat = ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')
+  .filterDate(YEAR+'-01-01', YEAR+'-12-31')
+  .map(maskClouds)
+  .median();
+Map.addLayer(landsat, {bands: ['B3', 'B2', 'B1'], min: 0, max: 0.1}, "landsat");
+
 function findPartition(truth, prediction){
   var results = [];
-  for(var i=0.2; i<=0.8; i += 0.05){
+  for(var i=0.2; i<=0.8; i += 0.02){
     var predict = prediction.select("impervious").gt(i);
-    var false_pos = predict.mask(truth.eq(0).and(predict));
-    var false_neg = mangrove_img.mask(truth.neq(0).and(predict.eq(0)));
+    var true_pos = predict.mask(truth.neq(0).and(predict)).reduceRegion(reducerOpts).get('impervious');
+    var false_pos = predict.mask(truth.eq(0).and(predict)).reduceRegion(reducerOpts).get('impervious');
+    var false_neg = mangrove_img.mask(truth.neq(0).and(predict.eq(0))).reduceRegion(reducerOpts).get('constant');
+    
+    var precision = ee.Number(true_pos).divide( ee.Number(true_pos).add(false_pos) );
+    var recall = ee.Number(true_pos).divide( ee.Number(true_pos).add(false_neg) );
+    
     results.push(ee.Dictionary({
       i: i,
-      false_pos: false_pos.reduceRegion(reducerOpts).get('impervious'),
-      false_neg: false_neg.reduceRegion(reducerOpts).get('constant')
+      true_pos: true_pos,
+      false_pos: false_pos,
+      false_neg: false_neg,
+      precision: precision,
+      recall: recall
     }));
   }
 
   results = results.map(function(r){ 
-    return ee.Dictionary(r).set('sum', ee.Number(r.get('false_pos')).add(r.get('false_neg')));
+    return ee.Dictionary(r).set('sum', ee.Number(r.get('precision')).multiply(r.get('recall')));
   });
 
-  return ee.Dictionary(ee.List(results).iterate(function(val, min){
-    min = ee.Dictionary(min);
+  return ee.Dictionary(ee.List(results).iterate(function(val, max){
+    max = ee.Dictionary(max);
     val = ee.Dictionary(val);
-    return ee.Algorithms.If(ee.Number(min.get('sum')).gt(val.get('sum')), val, min);
-  }, {sum: 1e12}));
+    return ee.Algorithms.If(ee.Number(max.get('sum')).lt(val.get('sum')), val, max);
+  }, {sum: 0}));
 }
 
 var mangrove_prediction = ee.Image(PREDICTION_ASSET);
@@ -88,9 +124,11 @@ if(TRUTH_SHAPEFILE){
   print("Best partition is:", min.get('i'));
   print("False positive areas (m^2, %):", min.get('false_pos'), ee.Number(min.get('false_pos')).divide(total_area).multiply(100));
   print("False negative areas (m^2, %):", min.get('false_neg'), ee.Number(min.get('false_neg')).divide(total_area).multiply(100));
+  print("Precision:", min.get('precision'))
+  print("Recall:", min.get('recall'))
 
   min.get('i').getInfo(function(split){
-    mangrove_prediction = mangrove_prediction.select("impervious").gt(split);
+    mangrove_prediction = mangrove_prediction.select("impervious").gt(DEFAULT_SPLIT || split);
   
     print("Total area is (m^2):", mangrove_prediction.updateMask(mangrove_prediction).reduceRegion(reducerOpts).get('impervious'));
     print("Truth (GMW) area is (m^2):", total_area);  
